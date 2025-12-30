@@ -1,7 +1,3 @@
-export const config = {
-  runtime: 'edge',
-};
-
 // 替换为你的阿里云 API Key
 const ALIYUN_API_KEY = "sk-1f4309e84b9045778449d9349d6e457a"; 
 
@@ -16,19 +12,23 @@ const SYSTEM_PROMPT = `
 如果被问到不知道的信息，请回答“这个您可以直接通过邮件联系我”。
 `;
 
-export default async function (request) {
+export async function onRequest(context) {
+  const { request } = context;
+
   // 处理 CORS 跨域
   if (request.method === "OPTIONS") {
     return new Response(null, {
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
       },
     });
   }
 
-  if (request.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+  if (request.method !== "POST") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
 
   try {
     const { messages } = await request.json();
@@ -42,7 +42,7 @@ export default async function (request) {
         "X-DashScope-SSE": "enable" // 开启流式输出
       },
       body: JSON.stringify({
-        model: "qwen-plus-2025-09-11", // 使用用户指定的模型
+        model: "qwen-plus", // 使用通用的 qwen-plus 模型别名
         input: {
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
