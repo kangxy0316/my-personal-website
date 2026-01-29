@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 移动端导航栏切换
     const navToggle = document.querySelector('.nav-toggle');
     const nav = document.querySelector('.nav');
-
+    
     if (navToggle) {
         navToggle.addEventListener('click', () => {
             nav.classList.toggle('active');
@@ -107,12 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // In a real deployment, this URL should be your Vercel/Cloudflare endpoint
             // For local development, we'll try to hit the local server or show a mock response
             // if the backend isn't running.
-
+            
             const messages = conversation.slice(-16);
 
-            // Use absolute URL to bypass custom domain CDN cache
-            // pages.dev domain has verified working API
-            const response = await fetch('https://my-personal-website-dco.pages.dev/api/chat', {
+            // Use relative path assuming the API is served from the same domain
+            // Note: For Cloudflare Pages Functions, the path is /api/chat
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages })
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const aiMessageDiv = document.createElement('div');
             aiMessageDiv.className = 'message ai';
             chatMessages.appendChild(aiMessageDiv);
-
+            
             // Handle Stream
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-
+                
                 const chunk = decoder.decode(value, { stream: true });
                 sseBuffer += chunk;
                 const lines = sseBuffer.split(/\r?\n/);
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } catch (e) {
                         console.error('Error parsing SSE:', e);
                     }
-                }
+                } 
             }
 
             if (!aiText) {
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => { });
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 
     const notesApp = document.getElementById('notesApp');
@@ -265,12 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveLocalBtn = document.getElementById('notesSaveLocalBtn');
     const saveRemoteBtn = document.getElementById('notesSaveRemoteBtn');
     const titleEl = document.getElementById('notesTitle');
+    const contentEl = document.getElementById('notesContent');
+
     const lockScreen = document.getElementById('notesLockScreen');
     const mainContent = document.getElementById('notesMainContent');
     const lockBtn = document.getElementById('notesLockBtn');
-    const attachBtn = document.getElementById('notesAttachBtn');
-    const fileInput = document.getElementById('notesFileInput');
-    const attachmentsEl = document.getElementById('notesAttachments');
 
     const STORAGE_KEY = 'kxy-notes-v1';
     const TOKEN_KEY = 'kxy-notes-passphrase-v1';
@@ -305,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lockScreen.classList.add('hidden');
             mainContent.classList.remove('hidden');
             render();
-            syncAll().catch(() => { }); // Auto sync on unlock
+            syncAll().catch(() => {}); // Auto sync on unlock
         } else {
             lockScreen.classList.remove('hidden');
             mainContent.classList.add('hidden');
@@ -344,11 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = typeof note?.id === 'string' ? note.id : '';
         const title = typeof note?.title === 'string' ? note.title : '';
         const content = typeof note?.content === 'string' ? note.content : '';
-        const attachments = Array.isArray(note?.attachments) ? note.attachments : [];
         const createdAt = typeof note?.createdAt === 'string' ? note.createdAt : nowIso();
         const updatedAt = typeof note?.updatedAt === 'string' ? note.updatedAt : createdAt;
         const dirty = Boolean(note?.dirty);
-        return { id, title, content, attachments, createdAt, updatedAt, dirty };
+        return { id, title, content, createdAt, updatedAt, dirty };
     }
 
     function makeId() {
@@ -360,54 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (title) return title;
         const firstLine = (note.content || '').split('\n')[0].trim();
         return firstLine ? firstLine.slice(0, 20) : '未命名';
-    }
-
-    function getIconForType(type) {
-        if (type.startsWith('image/')) return 'fa-image';
-        if (type.startsWith('video/')) return 'fa-file-video';
-        if (type.includes('pdf')) return 'fa-file-pdf';
-        if (type.includes('word') || type.includes('document')) return 'fa-file-word';
-        return 'fa-file';
-    }
-
-    function renderAttachments(attachments, noteId) {
-        attachmentsEl.innerHTML = '';
-        attachments.forEach((att, index) => {
-            const chip = document.createElement('div');
-            chip.className = 'attachment-chip';
-            chip.innerHTML = `
-                <i class="fa-regular ${getIconForType(att.type)} attachment-icon"></i>
-                <span class="attachment-name" title="${att.name}">${att.name}</span>
-                <div class="attachment-remove" title="删除附件">
-                    <i class="fa-solid fa-xmark"></i>
-                </div>
-            `;
-
-            // Handle Remove
-            chip.querySelector('.attachment-remove').addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!confirm(`删除附件 "${att.name}"?`)) return;
-                updateCurrent((note) => {
-                    const newAtts = [...note.attachments];
-                    newAtts.splice(index, 1);
-                    note.attachments = newAtts;
-                    note.dirty = true;
-                    note.updatedAt = nowIso();
-                    return note;
-                });
-                render(); // Re-render to reflect removal
-            });
-
-            // Handle Preview (if image/pdf) - simplistic
-            chip.addEventListener('click', () => {
-                const win = window.open();
-                if (win) {
-                    win.document.write(`<iframe src="${att.data}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
-                }
-            });
-
-            attachmentsEl.appendChild(chip);
-        });
     }
 
     function render() {
@@ -441,19 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const current = notes.find(n => n.id === selectedId) || null;
-        if (current) {
-            titleEl.value = current.title;
-            contentEl.value = current.content;
-            renderAttachments(current.attachments, current.id);
-            titleEl.disabled = false;
-            contentEl.disabled = false;
-        } else {
-            titleEl.value = '';
-            contentEl.value = '';
-            attachmentsEl.innerHTML = '';
-            titleEl.disabled = true;
-            contentEl.disabled = true;
-        }
+        titleEl.value = current?.title || '';
+        contentEl.value = current?.content || '';
     }
 
     function updateCurrent(mutator) {
@@ -495,7 +434,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = {
             title: note.title || '',
             content: note.content || '',
-            attachments: note.attachments || [],
             createdAt: note.createdAt || nowIso()
         };
         const data = await apiJson(`/api/notes/${encodeURIComponent(note.id)}`, {
@@ -592,54 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
         persistDraft();
     });
 
-    if (attachBtn && fileInput) {
-        attachBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', async () => {
-            if (!fileInput.files || fileInput.files.length === 0) return;
-
-            const files = Array.from(fileInput.files);
-            const MAX_SIZE = 2 * 1024 * 1024; // 2MB
-
-            for (const file of files) {
-                if (file.size > MAX_SIZE) {
-                    alert(`文件 "${file.name}" 太大 (超过2MB)，无法添加。`);
-                    continue;
-                }
-
-                try {
-                    const base64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
-
-                    updateCurrent((note) => {
-                        note.attachments.push({
-                            id: makeId(),
-                            name: file.name,
-                            type: file.type,
-                            data: base64,
-                            size: file.size
-                        });
-                        note.dirty = true;
-                        note.updatedAt = nowIso();
-                        return note;
-                    });
-                } catch (e) {
-                    console.error('File read error', e);
-                    alert('读取文件失败');
-                }
-            }
-
-            fileInput.value = ''; // Reset
-            render(); // Refresh list
-        });
-    }
-
     saveTokenBtn.addEventListener('click', () => {
         const value = (tokenInput.value || '').trim();
         if (!value) {
@@ -664,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     syncBtn.addEventListener('click', () => {
-        syncAll().catch((e) => { });
+        syncAll().catch((e) => {});
     });
 
     newBtn.addEventListener('click', () => {
@@ -673,7 +563,6 @@ document.addEventListener('DOMContentLoaded', () => {
             id: makeId(),
             title: '',
             content: '',
-            attachments: [],
             createdAt: nowIso(),
             updatedAt: nowIso(),
             dirty: true
@@ -698,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
         setStatus('已删除（本地）');
 
-        deleteNoteRemote(current.id).catch(() => { });
+        deleteNoteRemote(current.id).catch(() => {});
     });
 
     saveLocalBtn.addEventListener('click', () => {
@@ -725,16 +614,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     checkLockState();
-
-    // Auto-sync every 30 seconds
-    setInterval(() => {
-        const token = getToken();
-        if (token) syncAll().catch(() => { });
-    }, 30000);
-
-    // Auto-sync when window loses focus (switch tabs/apps)
-    window.addEventListener('blur', () => {
-        const token = getToken();
-        if (token) syncAll().catch(() => { });
-    });
 });

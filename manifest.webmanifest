@@ -1,0 +1,17 @@
+{
+  "name": "亢鑫圆 记事本",
+  "short_name": "记事本",
+  "start_url": "/#notes",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/avatar.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

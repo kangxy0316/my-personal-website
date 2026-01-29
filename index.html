@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>亢鑫圆 | 科研 & AI 开发者</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/style.css?v=3">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="记事本">
+    <link rel="apple-touch-icon" href="/avatar.png">
 </head>
+
 <body>
     <div class="background-glow"></div>
     <header class="site-header">
@@ -18,6 +28,7 @@
             <nav class="nav">
                 <a href="#about" class="nav-link">关于</a>
                 <a href="#projects" class="nav-link">项目</a>
+                <a href="#notes" class="nav-link">记事本</a>
                 <a href="#curry" class="nav-link">致敬</a>
                 <a href="#contact" class="nav-link contact-btn">联系我</a>
             </nav>
@@ -60,7 +71,8 @@
                     <div class="avatar-container">
                         <div class="avatar-ring"></div>
                         <div class="avatar-glow"></div>
-                        <img src="avatar.png" alt="亢鑫圆" class="avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <img src="avatar.png" alt="亢鑫圆" class="avatar-img"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                         <div class="avatar-placeholder" style="display:none">K</div>
                     </div>
                     <div class="floating-card card-1">
@@ -85,7 +97,7 @@
                     <h2 class="section-title">教育 <span class="text-gradient">&</span> 荣誉</h2>
                     <p class="section-subtitle">从数理基础到前沿生物材料的跨越</p>
                 </div>
-                
+
                 <div class="timeline">
                     <div class="timeline-item">
                         <div class="timeline-marker"></div>
@@ -195,6 +207,83 @@
             </div>
         </section>
 
+        <section id="notes" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">记事本 <span class="text-gradient">Notes</span></h2>
+                    <p class="section-subtitle">手机与电脑同步（输入同一口令即可隔离数据）</p>
+                </div>
+
+                <div class="notes-app" id="notesApp">
+                    <!-- Lock Screen -->
+                    <div class="notes-lock-screen" id="notesLockScreen">
+                        <div class="lock-icon-circle">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <h3>请输入访问口令</h3>
+                        <p>输入您的专属口令以同步和查看加密笔记</p>
+
+                        <div class="lock-input-group">
+                            <input type="password" class="lock-input" id="notesTokenInput" placeholder="输入口令"
+                                autocomplete="current-password">
+                            <button class="lock-btn" id="notesSaveTokenBtn">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main App (Hidden by default) -->
+                    <div class="notes-main-content hidden" id="notesMainContent">
+                        <div class="notes-layout">
+                            <aside class="notes-sidebar">
+                                <div class="notes-sidebar-header">
+                                    <button class="btn primary full-width" id="notesNewBtn">
+                                        <i class="fa-solid fa-plus"></i> 新建笔记
+                                    </button>
+                                </div>
+                                <div class="notes-items" id="notesItems"></div>
+                            </aside>
+
+                            <section class="notes-main">
+                                <div class="notes-toolbar">
+                                    <div class="notes-toolbar-group">
+                                        <button class="btn-icon" id="notesLockBtn" title="锁定">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </button>
+                                        <button class="btn-icon" id="notesAttachBtn" title="添加附件">
+                                            <i class="fa-solid fa-paperclip"></i>
+                                        </button>
+                                        <span class="last-saved" id="notesStatus">状态: 就绪</span>
+                                    </div>
+                                    <div class="notes-toolbar-actions">
+                                        <button class="btn-icon" id="notesSyncBtn" title="同步">
+                                            <i class="fa-solid fa-rotate"></i>
+                                        </button>
+                                        <button class="btn-icon" id="notesSaveLocalBtn" title="本地保存 (自动)">
+                                            <i class="fa-regular fa-floppy-disk"></i>
+                                        </button>
+                                        <button class="btn-icon" id="notesSaveRemoteBtn" title="上传至云端">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                        </button>
+                                        <button class="btn-icon danger" id="notesDeleteBtn" title="删除笔记">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="notes-editor-area">
+                                    <input type="file" id="notesFileInput" multiple hidden>
+                                    <input class="notes-title" id="notesTitle" placeholder="无标题笔记">
+                                    <textarea class="notes-content" id="notesContent"
+                                        placeholder="在此输入内容..."></textarea>
+                                    <div class="notes-attachments" id="notesAttachments"></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="curry" class="section curry-section">
             <div class="container">
                 <div class="curry-header">
@@ -220,8 +309,11 @@
                     </div>
                 </div>
                 <!-- 库里高光集锦视频 (Bilibili源) -->
-                <div class="curry-video-container" style="margin-top: 2rem; border-radius: 1rem; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                    <iframe src="//player.bilibili.com/player.html?bvid=BV1tv411g79N&page=1&high_quality=1&danmaku=0" allowfullscreen="allowfullscreen" width="100%" height="500" scrolling="no" frameborder="0" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts"></iframe>
+                <div class="curry-video-container"
+                    style="margin-top: 2rem; border-radius: 1rem; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <iframe src="//player.bilibili.com/player.html?bvid=BV1tv411g79N&page=1&high_quality=1&danmaku=0"
+                        allowfullscreen="allowfullscreen" width="100%" height="500" scrolling="no" frameborder="0"
+                        sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts"></iframe>
                 </div>
             </div>
         </section>
@@ -258,7 +350,8 @@
                 </div>
             </div>
             <div class="chat-input-area">
-                <input type="text" class="chat-input" id="chatInput" placeholder="输入问题..." aria-label="Type your message">
+                <input type="text" class="chat-input" id="chatInput" placeholder="输入问题..."
+                    aria-label="Type your message">
                 <button class="send-btn" id="sendBtn" aria-label="Send message">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
@@ -266,6 +359,7 @@
         </div>
     </div>
 
-    <script src="assets/main.js"></script>
+    <script src="assets/main.js?v=5"></script>
 </body>
+
 </html>
